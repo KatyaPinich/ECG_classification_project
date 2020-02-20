@@ -1,3 +1,9 @@
+# MAC OS
+.DS_Store
+
+# Datset folder
+datasets/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
