@@ -1,9 +1,7 @@
 import torch
 from pathlib import Path
 import pandas as pd
-import matplotlib.pyplot as plt
 from sklearn.model_selection import StratifiedShuffleSplit
-from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import Dataset
 from scipy.io import loadmat
 
