@@ -5,14 +5,32 @@ from sklearn.model_selection import StratifiedShuffleSplit
 from torch.utils.data import Dataset
 from scipy.io import loadmat
 
-ECG_PATH = 'datasets/ecg'
-
 class_ids = {
     'N': 0,
     'O': 1,
     'A': 2,
     '~': 3
 }
+
+
+class DataLoader:
+    def __init__(self, csv_path):
+        self.csv_path = csv_path
+        self.data_frame = self.load_data()
+
+    def load_data(self):
+        data_frame = pd.read_csv(self.csv_path)
+        return data_frame
+
+    def split(self, test_ratio=0.2):
+        splitter = StratifiedShuffleSplit(n_splits=1, test_size=test_ratio, random_state=42)
+        for train_index, test_index in splitter.split(self.data_frame, self.data_frame[:, 1]):
+            train_set = self.data_frame.loc[train_index]
+            test_set = self.data_frame.loc[test_index]
+        return train_set, test_set
+
+    def get_data(self):
+        return self.data_frame
 
 
 class TrainTestSplitter:
