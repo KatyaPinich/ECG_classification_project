@@ -5,7 +5,7 @@ from torch import save, load, no_grad, max
 from matplotlib import pyplot as plt
 
 
-class Model:
+class Classifier:
     def __init__(self, model, state_path):
         self.model = model
         self.state_path = state_path
