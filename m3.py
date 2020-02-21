@@ -3,7 +3,7 @@ import torch.nn.functional as activation
 
 
 class M3(nn.Module):
-    def __init__(self):
+    def __init__(self, num_classes):
         super(M3, self).__init__()
         self.first_conv_layer = nn.Conv1d(in_channels=1, out_channels=256, kernel_size=80, stride=4)
         self.first_batch_norm_layer = nn.BatchNorm1d(num_features=256)
@@ -12,7 +12,7 @@ class M3(nn.Module):
         self.second_batch_norm_layer = nn.BatchNorm1d(num_features=256)
 
         self.avg_pool = nn.AvgPool1d(154)
-        self.softmax_layer = nn.Linear(256, 2)
+        self.softmax_layer = nn.Linear(256, num_classes)
 
     def forward(self, x):
         x = self.pooling_layer(activation.relu(self.first_batch_norm_layer(self.first_conv_layer(x))))
