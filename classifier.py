@@ -10,7 +10,7 @@ class Classifier:
         self.model = model
         self.state_path = state_path
 
-    def train(self, train_set, batch_size, epochs):
+    def fit(self, train_set, batch_size, epochs):
         data_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
         optimizer = SGD(self.model.parameters(), lr=0.001, momentum=0.9)
         loss_function = CrossEntropyLoss()
@@ -56,7 +56,7 @@ class Classifier:
         #PATH = './speech_net.pth'
         save(self.model.state_dict(), self.state_path)
 
-    def test(self, test_set, batch_size):
+    def predict(self, test_set, batch_size):
         data_loader = DataLoader(test_set, batch_size=batch_size, shuffle=True)
         self.model.load_state_dict(load(self.state_path))
         correct = 0
