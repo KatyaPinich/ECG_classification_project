@@ -16,10 +16,10 @@ class_ids = {
 
 
 class TrainTestSplitter:
-    def __init__(self, csv_path, test_ration):
+    def __init__(self, csv_path, test_ratio):
         data_frame = pd.read_csv(csv_path)
-        split = StratifiedShuffleSplit(n_splits=1, test_size=test_ration, random_state=42)
-        for train_index, test_index in split.split(data_frame, data_frame[:, 1]):
+        splitter = StratifiedShuffleSplit(n_splits=1, test_size=test_ratio, random_state=42)
+        for train_index, test_index in splitter.split(data_frame, data_frame[:, 1]):
             self.train_set = data_frame.loc[train_index]
             self.test_set = data_frame.loc[test_index]
 
@@ -28,6 +28,7 @@ class TrainTestSplitter:
 
     def get_test_set(self):
         return self.test_set
+
 
 class ECGDataset(Dataset):
     def __init__(self, train_test_splitter, root_dir, is_train=True):
