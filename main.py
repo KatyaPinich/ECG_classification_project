@@ -1,15 +1,49 @@
-from classifier import *
-from m3 import *
+from pathlib import Path
 from ECGDataset import *
+from scipy.io import loadmat
+import matplotlib.pyplot as plt
+import numpy as np
+from filtering import *
 
 ECG_PATH = 'datasets/ecg'
 CSV_PATH = 'datasets/ecg/REFERENCE.csv'
 
-classifier = None
-num_classes = 4
+data_loader = DataLoader(Path(CSV_PATH))
+train_set, test_set = data_loader.split(test_ratio=0.2)
 
-model = M3(num_classes=num_classes)
+signal_filename = train_set.iloc[0, 0]
+signal_label = train_set.iloc[0, 1]
+signal_path = Path(ECG_PATH).joinpath(f'{signal_filename}.mat')
+raw_signal = loadmat(signal_path)['val'][0, :]
+raw_signal = (raw_signal - np.mean(raw_signal)) / np.std(raw_signal)
 
-classifier = Classifier(model, '')
+sampling_freq = 300
+samples = 3000#len(raw_signal) - 1
+t = np.linspace(0.0, samples / sampling_freq, samples, endpoint=False)
 
-splitter = TrainTestSplitter()
+fig, axs = plt.subplots(2)
+fig.suptitle(f'{signal_filename}-{signal_label}')
+
+axs[0].plot(t, raw_signal[:samples])
+axs[0].set_title('Raw Signal')
+
+# Filter
+butter_filter = ButterFilter(sampling_freq=sampling_freq, order=3)
+
+signal_highpass = butter_filter.highpass(raw_signal, 1)
+
+#axs[1].plot(t, signal_highpass[:samples])
+#axs[1].set_title('High-Pass')
+
+signal_bandstop = butter_filter.bandstop(signal_highpass, 58, 62)
+
+#axs[2].plot(t, signal_bandstop[:samples])
+#axs[2].set_title('Band-Stop')
+
+lowpass_butter = ButterFilter(sampling_freq=sampling_freq, order=4)
+signals_lowpass = lowpass_butter.lowpass(signal_bandstop, cutoff_freq=25)
+
+axs[1].plot(t, signals_lowpass[:samples])
+axs[1].set_title('Low-Pass')
+
+plt.show()

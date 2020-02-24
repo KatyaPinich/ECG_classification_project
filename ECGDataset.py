@@ -19,12 +19,12 @@ class DataLoader:
         self.data_frame = self.load_data()
 
     def load_data(self):
-        data_frame = pd.read_csv(self.csv_path)
+        data_frame = pd.read_csv(self.csv_path, header=None)
         return data_frame
 
     def split(self, test_ratio=0.2):
         splitter = StratifiedShuffleSplit(n_splits=1, test_size=test_ratio, random_state=42)
-        for train_index, test_index in splitter.split(self.data_frame, self.data_frame[:, 1]):
+        for train_index, test_index in splitter.split(self.data_frame, self.data_frame.iloc[:, 1]):
             train_set = self.data_frame.loc[train_index]
             test_set = self.data_frame.loc[test_index]
         return train_set, test_set
