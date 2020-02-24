@@ -4,20 +4,35 @@ from scipy.io import loadmat
 import matplotlib.pyplot as plt
 import numpy as np
 from filtering import *
+from dataset_transforms import *
+from classifier import Classifier
+from m3 import M3
 
-ECG_PATH = 'datasets/ecg'
+DATA_PATH = 'datasets/ecg'
 CSV_PATH = 'datasets/ecg/REFERENCE.csv'
+sampling_freq = 300
 
 data_loader = DataLoader(Path(CSV_PATH))
 train_set, test_set = data_loader.split(test_ratio=0.2)
 
+transform = Compose(
+    [Normalize(),
+     Filter(sampling_freq=sampling_freq),
+     Rescale(output_size=9000),
+     ToTensor()])
+
+train_dataset = ECGDataset(train_set, DATA_PATH, transform)
+
+model = M3(num_classes=4)
+classifier = Classifier(model=model, state_path='./state.pth')
+classifier.fit(train_dataset, batch_size=4, epochs=32)
+
 signal_filename = train_set.iloc[0, 0]
 signal_label = train_set.iloc[0, 1]
-signal_path = Path(ECG_PATH).joinpath(f'{signal_filename}.mat')
+signal_path = Path(DATA_PATH).joinpath(f'{signal_filename}.mat')
 raw_signal = loadmat(signal_path)['val'][0, :]
 raw_signal = (raw_signal - np.mean(raw_signal)) / np.std(raw_signal)
 
-sampling_freq = 300
 samples = 3000#len(raw_signal) - 1
 t = np.linspace(0.0, samples / sampling_freq, samples, endpoint=False)
 

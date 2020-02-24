@@ -11,7 +11,7 @@ class M3(nn.Module):
         self.second_conv_layer = nn.Conv1d(in_channels=256, out_channels=256, kernel_size=3, stride=1)
         self.second_batch_norm_layer = nn.BatchNorm1d(num_features=256)
 
-        self.avg_pool = nn.AvgPool1d(154)
+        self.avg_pool = nn.AvgPool1d(138)
         self.softmax_layer = nn.Linear(256, num_classes)
 
     def forward(self, x):

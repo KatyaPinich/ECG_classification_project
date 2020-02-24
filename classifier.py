@@ -1,6 +1,7 @@
 from torch.utils.data import DataLoader
 from torch.nn import CrossEntropyLoss
 from torch.optim import SGD
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch import save, load, no_grad, max
 from matplotlib import pyplot as plt
 
@@ -12,8 +13,12 @@ class Classifier:
 
     def fit(self, train_set, batch_size, epochs):
         data_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
-        optimizer = SGD(self.model.parameters(), lr=0.001, momentum=0.9)
+
+        learning_rate = 0.1
+        optimizer = SGD(self.model.parameters(), lr=learning_rate, momentum=0.9)
         loss_function = CrossEntropyLoss()
+
+        scheduler = ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=0, verbose=True)
 
         # network training:
         train_loss_values = []
@@ -33,6 +38,9 @@ class Classifier:
                 loss = loss_function(outputs, targets)
                 loss.backward()
                 optimizer.step()
+
+                # Update learning rate
+                scheduler.step(loss)
 
                 # print statistics
                 running_loss += loss.item()

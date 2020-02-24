@@ -71,7 +71,7 @@ class ECGDataset(Dataset):
         signal = loadmat(ecg_path)['val'][0, :]
 
         if self.transform:
-            self.transform(signal)
+            signal = self.transform(signal)
 
         label = self.data_frame.iloc[idx, 1]
         label_id = class_ids.get(label)

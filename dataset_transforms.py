@@ -1,6 +1,16 @@
 import numpy as np
+import torch
 from filtering import *
-from torch import from_numpy
+
+
+class Compose(object):
+    def __init__(self, transforms):
+        self.transforms = transforms
+
+    def __call__(self, sample):
+        for transform in self.transforms:
+            sample = transform(sample)
+        return sample
 
 
 class Normalize(object):
@@ -33,7 +43,7 @@ class Rescale(object):
         original_length = len(signal)
 
         if original_length < self.output_size:
-            signal = np.concatenate((signal, np.zeros(shape=(1, self.output_size - 1))))
+            signal = np.concatenate((signal, np.zeros(self.output_size - original_length)))
         elif original_length > self.output_size:
             signal = signal[0:self.output_size]
 
@@ -42,6 +52,6 @@ class Rescale(object):
 
 class ToTensor(object):
     def __call__(self, signal):
-        signal = signal.reshape(-1, 1)
-
-        return from_numpy(signal)
+        signal_reshape = signal.reshape(1, -1)
+        signal = torch.tensor(signal_reshape, dtype=torch.float)
+        return signal
