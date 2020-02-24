@@ -25,7 +25,7 @@ train_dataset = ECGDataset(train_set, DATA_PATH, transform)
 
 model = M3(num_classes=4)
 classifier = Classifier(model=model, state_path='./state.pth')
-classifier.fit(train_dataset, batch_size=4, epochs=32)
+classifier.fit(train_dataset, batch_size=4, epochs=4)
 
 signal_filename = train_set.iloc[0, 0]
 signal_label = train_set.iloc[0, 1]

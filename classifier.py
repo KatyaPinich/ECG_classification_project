@@ -22,6 +22,11 @@ class Classifier:
 
         # network training:
         train_loss_values = []
+        lr_find_loss = []
+        lr_find_lr = []
+        iter = 0
+        smoothing = 0.05
+
         for epoch in range(epochs):  # loop over the dataset multiple times
             running_loss = 0.0
             epoch_loss = 0.0
@@ -41,6 +46,14 @@ class Classifier:
 
                 # Update learning rate
                 scheduler.step(loss)
+                lr_step = optimizer.state_dict()['param_groups'][0]['lr']
+                lr_find_lr.append(lr_step)
+
+                if iter == 0:
+                    lr_find_loss.append(loss)
+                else:
+                    smooth_loss = smoothing * loss + (1 - smoothing) * lr_find_loss[-1]
+                    lr_find_loss.append(smooth_loss)
 
                 # print statistics
                 running_loss += loss.item()
@@ -50,14 +63,24 @@ class Classifier:
                           (epoch + 1, i + 1, epoch_loss / 20))
                     epoch_loss = 0.0
 
+                iter += 1
+
             # Save loss value for current epoch run
             train_loss_values.append(running_loss / len(train_set))
 
         print('Finished Training')
-        plt.title(f'Model Loss for {epochs} epochs')
-        plt.xlabel('epoch')
-        plt.ylabel('loss')
-        plt.plot(train_loss_values)
+        fig, axs = plt.subplots(3)
+        fig.suptitle(f'Model Loss for {epochs} epochs')
+        axs[0].plot(train_loss_values)
+        axs[0].set_title(f'Model Loss for {epochs} epochs')
+        axs[1].plot(lr_find_lr)
+        axs[1].set_title(f'LR for {epochs} epochs')
+        axs[2].plot(lr_find_loss)
+        axs[2].set_title(f'LR Find Loss for {epochs} epochs')
+        #plt.title(f'Model Loss for {epochs} epochs')
+        #plt.xlabel('epoch')
+        #plt.ylabel('loss')
+        #plt.plot(train_loss_values)
         plt.show()
 
         # save net state dict
