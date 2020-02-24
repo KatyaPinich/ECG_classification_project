@@ -49,20 +49,16 @@ class TrainTestSplitter:
 
 
 class ECGDataset(Dataset):
-    def __init__(self, train_test_splitter, root_dir, is_train=True):
+    def __init__(self, data_frame, data_dir, transform=None):
         """
         Args:
-            train_test_splitter (class): An instance of a TrainTestSplitter class
-            root_dir (string): Directory with all the audio files
-            is_train (bool): Indicates weather a training set is requested.
+            data_frame (pandas data frame): The data frame of the set.
+            data_dir (string): Directory with all signals.
+            transform (callable, optional): Optional transform to be applied on a sample.
         """
-        self.train_test_splitter = train_test_splitter
-        self.is_train = is_train
-        if self.is_train:
-            self.data_frame = train_test_splitter.get_train_set()
-        else:
-            self.data_frame = train_test_splitter.get_test_set()
-        self.root_dir = root_dir
+        self.data_frame = data_frame
+        self.data_dir = data_dir
+        self.transform = transform
 
     def __len__(self):
         return len(self.data_frame)
@@ -71,14 +67,16 @@ class ECGDataset(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        ecg_filepath = Path(self.root_dir).joinpath(f'{self.data_frame.iloc[idx, 0]}.mat')
+        ecg_path = Path(self.data_dir).joinpath(f'{self.data_frame.iloc[idx, 0]}.mat')
+        signal = loadmat(ecg_path)['val'][0, :]
 
-        data = loadmat(ecg_filepath)
+        if self.transform:
+            self.transform(signal)
 
         label = self.data_frame.iloc[idx, 1]
         label_id = class_ids.get(label)
 
-        sample = {'ecg': data, 'label': label_id}
+        sample = {'ecg': signal, 'label': label_id}
 
         return sample
 
