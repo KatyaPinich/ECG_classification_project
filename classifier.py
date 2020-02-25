@@ -1,7 +1,6 @@
 from torch.utils.data import DataLoader
 from torch.nn import CrossEntropyLoss
 from torch.optim import SGD
-from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch import save, load, no_grad, max
 from matplotlib import pyplot as plt
 
@@ -11,26 +10,19 @@ class Classifier:
         self.model = model
         self.state_path = state_path
 
-    def fit(self, train_set, batch_size, epochs):
-        data_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
+    def fit(self, train_set, batch_size, epochs, validation_data, verbose=False, shuffle=True):
+        train_set_loader = DataLoader(train_set, batch_size=batch_size, shuffle=shuffle)
 
-        learning_rate = 0.1
+        learning_rate = 0.001
         optimizer = SGD(self.model.parameters(), lr=learning_rate, momentum=0.9)
         loss_function = CrossEntropyLoss()
 
-        scheduler = ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=0, verbose=True)
-
         # network training:
         train_loss_values = []
-        lr_find_loss = []
-        lr_find_lr = []
-        iter = 0
-        smoothing = 0.05
-
-        for epoch in range(epochs):  # loop over the dataset multiple times
+        for epoch in range(epochs):
             running_loss = 0.0
             epoch_loss = 0.0
-            for i, data in enumerate(data_loader, 0):
+            for i, data in enumerate(train_set_loader, 0):
                 # get the inputs; data is a list of [inputs, labels]
                 inputs = data['ecg']
                 targets = data['label']
@@ -44,17 +36,6 @@ class Classifier:
                 loss.backward()
                 optimizer.step()
 
-                # Update learning rate
-                scheduler.step(loss)
-                lr_step = optimizer.state_dict()['param_groups'][0]['lr']
-                lr_find_lr.append(lr_step)
-
-                if iter == 0:
-                    lr_find_loss.append(loss)
-                else:
-                    smooth_loss = smoothing * loss + (1 - smoothing) * lr_find_loss[-1]
-                    lr_find_loss.append(smooth_loss)
-
                 # print statistics
                 running_loss += loss.item()
                 epoch_loss += loss.item()
@@ -63,28 +44,17 @@ class Classifier:
                           (epoch + 1, i + 1, epoch_loss / 20))
                     epoch_loss = 0.0
 
-                iter += 1
-
             # Save loss value for current epoch run
             train_loss_values.append(running_loss / len(train_set))
 
         print('Finished Training')
-        fig, axs = plt.subplots(3)
-        fig.suptitle(f'Model Loss for {epochs} epochs')
-        axs[0].plot(train_loss_values)
-        axs[0].set_title(f'Model Loss for {epochs} epochs')
-        axs[1].plot(lr_find_lr)
-        axs[1].set_title(f'LR for {epochs} epochs')
-        axs[2].plot(lr_find_loss)
-        axs[2].set_title(f'LR Find Loss for {epochs} epochs')
-        #plt.title(f'Model Loss for {epochs} epochs')
-        #plt.xlabel('epoch')
-        #plt.ylabel('loss')
-        #plt.plot(train_loss_values)
+        plt.title(f'Model Loss for {epochs} epochs')
+        plt.xlabel('epoch')
+        plt.ylabel('loss')
+        plt.plot(train_loss_values)
         plt.show()
 
         # save net state dict
-        #PATH = './speech_net.pth'
         save(self.model.state_dict(), self.state_path)
 
     def predict(self, test_set, batch_size):

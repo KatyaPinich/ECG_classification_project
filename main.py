@@ -22,10 +22,15 @@ transform = Compose(
      ToTensor()])
 
 train_dataset = ECGDataset(train_set, DATA_PATH, transform)
+test_dataset = ECGDataset(test_set, DATA_PATH, transform)
+
+batch_size = 4
+iterations = 6000
+epochs = 32#int(iterations / (len(train_set) / batch_size))
 
 model = M3(num_classes=4)
 classifier = Classifier(model=model, state_path='./state.pth')
-classifier.fit(train_dataset, batch_size=4, epochs=4)
+classifier.fit(train_dataset, batch_size=batch_size, epochs=epochs, validation_data=test_dataset)
 
 signal_filename = train_set.iloc[0, 0]
 signal_label = train_set.iloc[0, 1]
