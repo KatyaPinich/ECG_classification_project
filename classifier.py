@@ -3,6 +3,7 @@ from torch.nn import CrossEntropyLoss
 from torch.optim import SGD
 from torch import save, load, no_grad, max
 from matplotlib import pyplot as plt
+from commons import *
 
 
 class Classifier:
@@ -58,10 +59,10 @@ class Classifier:
         save(self.model.state_dict(), self.state_path)
 
     def predict(self, test_set, batch_size):
-        data_loader = DataLoader(test_set, batch_size=batch_size, shuffle=True)
+        data_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False)
         self.model.load_state_dict(load(self.state_path))
-        correct = 0
-        total = 0
+        correct = 0.0
+        total = 0.0
         class_correct = list(0. for i in range(10))
         class_total = list(0. for i in range(10))
         with no_grad():
@@ -73,10 +74,17 @@ class Classifier:
                 _, predicted = max(outputs.data, 1)
 
                 c = (predicted == targets).squeeze()
-                for i in range(4):
+                for i in range(len(targets)):
                     label = targets[i]
                     class_correct[label] += c[i].item()
                     class_total[label] += 1
 
                 total += targets.size(0)
                 correct += (predicted == targets).sum().item()
+
+        print('Accuracy of the network on the test set: %d %%' % (
+                100 * correct / total))
+
+        for i in range(4):
+            print('Accuracy of %5s : %2d %%' % (
+                i, 100 * class_correct[i] / class_total[i]))

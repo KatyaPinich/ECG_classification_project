@@ -4,13 +4,7 @@ import pandas as pd
 from sklearn.model_selection import StratifiedShuffleSplit
 from torch.utils.data import Dataset
 from scipy.io import loadmat
-
-class_ids = {
-    'N': 0,
-    'O': 1,
-    'A': 2,
-    '~': 3
-}
+from commons import *
 
 
 class DataLoader:

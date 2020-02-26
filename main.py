@@ -26,11 +26,12 @@ test_dataset = ECGDataset(test_set, DATA_PATH, transform)
 
 batch_size = 4
 iterations = 6000
-epochs = 32#int(iterations / (len(train_set) / batch_size))
+epochs = 100#int(iterations / (len(train_set) / batch_size))
 
 model = M3(num_classes=4)
-classifier = Classifier(model=model, state_path='./state.pth')
+classifier = Classifier(model=model, state_path=f'./state_{epochs}_epochs.pth')
 classifier.fit(train_dataset, batch_size=batch_size, epochs=epochs, validation_data=test_dataset)
+classifier.predict(test_dataset, batch_size=batch_size)
 
 signal_filename = train_set.iloc[0, 0]
 signal_label = train_set.iloc[0, 1]
