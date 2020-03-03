@@ -7,6 +7,7 @@ from filtering import *
 from dataset_transforms import *
 from classifier import Classifier
 from m3 import M3
+from m5 import M5
 
 DATA_PATH = 'datasets/ecg'
 CSV_PATH = 'datasets/ecg/REFERENCE.csv'
@@ -28,7 +29,8 @@ batch_size = 4
 iterations = 6000
 epochs = 100#int(iterations / (len(train_set) / batch_size))
 
-model = M3(num_classes=4)
+#model = M3(num_classes=4)
+model = M5(num_classes=4)
 classifier = Classifier(model=model, state_path=f'./state_{epochs}_epochs.pth')
 classifier.fit(train_dataset, batch_size=batch_size, epochs=epochs, validation_data=test_dataset)
 classifier.predict(test_dataset, batch_size=batch_size)

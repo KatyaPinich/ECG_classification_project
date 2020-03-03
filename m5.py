@@ -33,8 +33,8 @@ class M5(nn.Module):
             nn.MaxPool1d(kernel_size=4)
         )
 
-        self.avg_pool = nn.AvgPool1d(138)
-        self.softmax_layer = nn.Linear(256, num_classes)
+        self.avg_pool = nn.AvgPool1d(8)
+        self.softmax_layer = nn.Linear(512, num_classes)
 
     def forward(self, x):
         x = self.conv_block1(x)
