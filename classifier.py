@@ -5,6 +5,8 @@ import torch
 import time
 import copy
 
+from commons import *
+
 
 class Classifier:
     def __init__(self, model, state_path):
@@ -121,8 +123,8 @@ class Classifier:
         self.model.load_state_dict(torch.load(self.state_path))
         correct = 0.0
         total = 0.0
-        class_correct = list(0. for i in range(10))
-        class_total = list(0. for i in range(10))
+        class_correct = list(0. for i in range(4))
+        class_total = list(0. for i in range(4))
         with torch.no_grad():
             for data in data_loader:
                 inputs = data['ecg']
@@ -145,4 +147,4 @@ class Classifier:
 
         for i in range(4):
             print('Accuracy of %5s : %2d %%' % (
-                i, 100 * class_correct[i] / class_total[i]))
+                get_class_name(i), 100 * class_correct[i] / class_total[i]))

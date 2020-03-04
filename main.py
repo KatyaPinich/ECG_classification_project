@@ -10,6 +10,8 @@ from classifier import Classifier
 from m3 import M3
 from m5 import M5
 
+from commons import *
+
 DATA_PATH = 'datasets/ecg'
 CSV_PATH = 'datasets/ecg/REFERENCE.csv'
 sampling_freq = 300
@@ -36,8 +38,8 @@ if __name__ == '__main__':
          Rescale(output_size=9000),
          ToTensor()])
 
-    train_dataset = ECGDataset(train_set, DATA_PATH, transform)
-    test_dataset = ECGDataset(test_set, DATA_PATH, transform)
+    train_dataset = ECGDataset(train_set, data_dir, transform)
+    test_dataset = ECGDataset(test_set, data_dir, transform)
 
     batch_size = 4
     epochs = 32
@@ -63,40 +65,3 @@ if __name__ == '__main__':
         classifier.predict(test_dataset, batch_size=batch_size)
     else:
         raise Exception(f'{mode} is not a supported mode.')
-
-signal_filename = train_set.iloc[0, 0]
-signal_label = train_set.iloc[0, 1]
-signal_path = Path(DATA_PATH).joinpath(f'{signal_filename}.mat')
-raw_signal = loadmat(signal_path)['val'][0, :]
-raw_signal = (raw_signal - np.mean(raw_signal)) / np.std(raw_signal)
-
-samples = 3000#len(raw_signal) - 1
-t = np.linspace(0.0, samples / sampling_freq, samples, endpoint=False)
-
-plt.figure()
-fig, axs = plt.subplots(2)
-fig.suptitle(f'{signal_filename}-{signal_label}')
-
-axs[0].plot(t, raw_signal[:samples])
-axs[0].set_title('Raw Signal')
-
-# Filter
-butter_filter = ButterFilter(sampling_freq=sampling_freq, order=3)
-
-signal_highpass = butter_filter.highpass(raw_signal, 1)
-
-#axs[1].plot(t, signal_highpass[:samples])
-#axs[1].set_title('High-Pass')
-
-signal_bandstop = butter_filter.bandstop(signal_highpass, 58, 62)
-
-#axs[2].plot(t, signal_bandstop[:samples])
-#axs[2].set_title('Band-Stop')
-
-lowpass_butter = ButterFilter(sampling_freq=sampling_freq, order=4)
-signals_lowpass = lowpass_butter.lowpass(signal_bandstop, cutoff_freq=25)
-
-axs[1].plot(t, signals_lowpass[:samples])
-axs[1].set_title('Low-Pass')
-
-plt.show()

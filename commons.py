@@ -4,3 +4,9 @@ class_ids = {
     'A': 2,
     '~': 3
 }
+
+
+def get_class_name(class_id):
+    for key, value in class_ids.items():
+        if value == class_id:
+            return key
