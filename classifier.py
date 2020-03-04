@@ -2,8 +2,6 @@ from torch.utils.data import DataLoader
 from torch.nn import CrossEntropyLoss
 from torch.optim import SGD
 import torch
-from matplotlib import pyplot as plt
-from commons import *
 import time
 import copy
 
@@ -68,6 +66,8 @@ class Classifier:
         since = time.time()
 
         val_acc_history = []
+        train_loss_history = []
+        val_loss_history = []
 
         best_model_wts = copy.deepcopy(self.model.state_dict())
         best_acc = 0.0
@@ -86,6 +86,8 @@ class Classifier:
             epoch_loss = running_loss / len(test_set_loader.dataset)
             epoch_acc = running_corrects.double() / len(test_set_loader.dataset)
 
+            train_loss_history.append(epoch_loss)
+
             print(f'Train Loss: {epoch_loss} Acc: {epoch_acc}')
 
             running_loss, running_corrects = self.validate(validation_data, batch_size, optimizer, loss_function)
@@ -100,6 +102,7 @@ class Classifier:
                 best_model_wts = copy.deepcopy(self.model.state_dict())
 
             val_acc_history.append(epoch_acc)
+            val_loss_history.append(epoch_loss)
 
             print()
 
@@ -110,6 +113,8 @@ class Classifier:
         # Load best model weights and save them
         self.model.load_state_dict(best_model_wts)
         torch.save(self.model.state_dict(), self.state_path)
+
+        return train_loss_history, val_loss_history
 
     def predict(self, test_set, batch_size):
         data_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False)
