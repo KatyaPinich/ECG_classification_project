@@ -1,9 +1,11 @@
+import time
+import copy
+
 from torch.utils.data import DataLoader
 from torch.nn import CrossEntropyLoss
 from torch.optim import SGD
 import torch
-import time
-import copy
+import pandas as pd
 
 from commons import *
 
@@ -118,7 +120,11 @@ class Classifier:
 
         return train_loss_history, val_loss_history
 
-    def predict(self, test_set, batch_size):
+    def save_predictions(self, predictions, filepath):
+        data_frame = pd.DataFrame(predictions, columns=['Filename', 'Class', 'Predicted'])
+        data_frame.to_csv(filepath)
+
+    def predict(self, test_set, batch_size, output_filepath):
         data_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False)
         self.model.load_state_dict(torch.load(self.state_path))
         correct = 0.0
@@ -128,10 +134,13 @@ class Classifier:
         class_correct = list(0. for i in range(num_classes))
         class_total = list(0. for i in range(num_classes))
 
+        predictions = []
+
         start_time = time.time()
 
         with torch.no_grad():
             for data in data_loader:
+                filenames = data['filename']
                 inputs = data['ecg']
                 targets = data['label']
 
@@ -144,11 +153,17 @@ class Classifier:
                     class_correct[label] += c[i].item()
                     class_total[label] += 1
 
+                    # Save prediction in format of file, label, predicted
+                    predictions.append((filenames[i], get_class_name(label), get_class_name(predicted[i])))
+
                 total += targets.size(0)
                 correct += (predicted == targets).sum().item()
 
         time_elapsed = time.time() - start_time
         print('Prediction complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
+
+        # Save predictions
+        self.save_predictions(predictions, output_filepath)
 
         print('Accuracy of the network on the test set: %d %%' % (
                 100 * correct / total))

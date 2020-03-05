@@ -8,10 +8,6 @@ from classifier import Classifier
 from ECGDataset import *
 from m5 import M5
 
-DATA_PATH = 'datasets/ecg'
-CSV_PATH = 'datasets/ecg/REFERENCE.csv'
-sampling_freq = 300
-
 
 def main():
     args = sys.argv
@@ -58,7 +54,8 @@ def main():
         plt.legend()
         plt.show()
     elif mode == 'predict':
-        classifier.predict(test_dataset, batch_size=batch_size)
+        output_filepath = Path(data_dir).joinpath('predicted.CSV')
+        classifier.predict(test_dataset, batch_size=batch_size, output_filepath=output_filepath)
     else:
         raise Exception(f'{mode} is not a supported mode.')
 

@@ -61,7 +61,8 @@ class ECGDataset(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        ecg_path = Path(self.data_dir).joinpath(f'{self.data_frame.iloc[idx, 0]}.mat')
+        filename = self.data_frame.iloc[idx, 0]
+        ecg_path = Path(self.data_dir).joinpath(f'{filename}.mat')
         signal = loadmat(ecg_path)['val'][0, :]
 
         if self.transform:
@@ -70,7 +71,7 @@ class ECGDataset(Dataset):
         label = self.data_frame.iloc[idx, 1]
         label_id = class_ids.get(label)
 
-        sample = {'ecg': signal, 'label': label_id}
+        sample = {'ecg': signal, 'label': label_id, 'filename': filename}
 
         return sample
 

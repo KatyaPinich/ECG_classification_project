@@ -1,3 +1,8 @@
+DATA_PATH = 'datasets/ecg'
+CSV_PATH = 'datasets/ecg/REFERENCE.csv'
+
+sampling_freq = 300
+
 class_ids = {
     'N': 0,
     'O': 1,
