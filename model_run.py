@@ -1,25 +1,22 @@
 import sys
 from pathlib import Path
-from ECGDataset import *
-from scipy.io import loadmat
+
 import matplotlib.pyplot as plt
-import numpy as np
-from filtering import *
+
 from dataset_transforms import *
 from classifier import Classifier
-from m3 import M3
+from ECGDataset import *
 from m5 import M5
-
-from commons import *
 
 DATA_PATH = 'datasets/ecg'
 CSV_PATH = 'datasets/ecg/REFERENCE.csv'
 sampling_freq = 300
 
-if __name__ == '__main__':
+
+def main():
     args = sys.argv
     if len(args) < 4:
-        print(f'main.py <mode> <csv_path> <data_dir>')
+        raise Exception(f'usage:  main.py <mode> <csv_path> <data_dir>')
 
     mode = args[1]
     csv_path = Path(args[2])
@@ -44,7 +41,6 @@ if __name__ == '__main__':
     batch_size = 4
     epochs = 32
 
-    # model = M3(num_classes=4)
     model = M5(num_classes=4)
     classifier = Classifier(model=model, state_path=f'./state_{epochs}_epochs_1.pth')
 
@@ -65,3 +61,8 @@ if __name__ == '__main__':
         classifier.predict(test_dataset, batch_size=batch_size)
     else:
         raise Exception(f'{mode} is not a supported mode.')
+
+
+if __name__ == '__main__':
+    main()
+
