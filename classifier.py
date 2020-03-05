@@ -123,8 +123,13 @@ class Classifier:
         self.model.load_state_dict(torch.load(self.state_path))
         correct = 0.0
         total = 0.0
-        class_correct = list(0. for i in range(4))
-        class_total = list(0. for i in range(4))
+
+        num_classes = len(class_ids.keys())
+        class_correct = list(0. for i in range(num_classes))
+        class_total = list(0. for i in range(num_classes))
+
+        start_time = time.time()
+
         with torch.no_grad():
             for data in data_loader:
                 inputs = data['ecg']
@@ -141,6 +146,9 @@ class Classifier:
 
                 total += targets.size(0)
                 correct += (predicted == targets).sum().item()
+
+        time_elapsed = time.time() - start_time
+        print('Prediction complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
         print('Accuracy of the network on the test set: %d %%' % (
                 100 * correct / total))
