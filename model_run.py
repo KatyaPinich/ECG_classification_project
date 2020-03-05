@@ -22,8 +22,11 @@ def main():
     if not Path(data_dir).is_dir():
         raise Exception(f'{data_dir} does not exist.')
 
-    data_loader = DataLoader(csv_path)
-    train_set, test_set = data_loader.split(test_ratio=0.2)
+    batch_size = 4
+    epochs = 32
+
+    model = M5(num_classes=4)
+    classifier = Classifier(model=model, state_path=f'./state_{epochs}_epochs_1.pth')
 
     transform = Compose(
         [Normalize(),
@@ -31,16 +34,14 @@ def main():
          Rescale(output_size=9000),
          ToTensor()])
 
-    train_dataset = ECGDataset(train_set, data_dir, transform)
-    test_dataset = ECGDataset(test_set, data_dir, transform)
-
-    batch_size = 4
-    epochs = 32
-
-    model = M5(num_classes=4)
-    classifier = Classifier(model=model, state_path=f'./state_{epochs}_epochs_1.pth')
+    data_loader = DataLoader(csv_path)
 
     if mode == 'fit':
+        # Split to train and test
+        train_set, test_set = data_loader.split(test_ratio=0.2)
+        train_dataset = ECGDataset(train_set, data_dir, transform)
+        test_dataset = ECGDataset(test_set, data_dir, transform)
+
         # Fit model on data
         train_loss_history, val_loss_history = classifier.fit(train_dataset, batch_size=batch_size, epochs=epochs,
                                                               validation_data=test_dataset)
@@ -54,7 +55,9 @@ def main():
         plt.legend()
         plt.show()
     elif mode == 'predict':
+        test_dataset = ECGDataset(data_loader.get_data(), data_dir, transform)
         output_filepath = Path(data_dir).joinpath('predicted.CSV')
+
         classifier.predict(test_dataset, batch_size=batch_size, output_filepath=output_filepath)
     else:
         raise Exception(f'{mode} is not a supported mode.')
