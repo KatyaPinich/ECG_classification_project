@@ -12,7 +12,7 @@ from m5 import M5
 def main():
     args = sys.argv
     if len(args) < 4:
-        raise Exception(f'usage:  main.py <mode> <csv_path> <data_dir>')
+        raise Exception(f'usage:  main.py <mode> <csv_path> <data_dir> [<predictions_path>]')
 
     mode = args[1]
     csv_path = Path(args[2])
@@ -56,7 +56,13 @@ def main():
         plt.show()
     elif mode == 'predict':
         test_dataset = ECGDataset(data_loader.get_data(), data_dir, transform)
-        output_filepath = Path(data_dir).joinpath('predicted.CSV')
+
+        # Check output path
+        if len(args) == 5:
+            predictions_path = args[4]
+        else:
+            predictions_path = data_dir
+        output_filepath = Path(predictions_path).joinpath('predicted.CSV')
 
         classifier.predict(test_dataset, batch_size=batch_size, output_filepath=output_filepath)
     else:
